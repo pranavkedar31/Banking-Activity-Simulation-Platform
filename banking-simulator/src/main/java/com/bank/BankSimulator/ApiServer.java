@@ -7,12 +7,12 @@ import static spark.Spark.*;
 import com.bank.BankSimulato.repository.AccountRepository;
 import com.bank.BankSimulato.repository.TransactionRepository;
 import com.bank.BankSimulator.model.Account;
+import com.bank.BankSimulator.model.User;
 import com.bank.BankSimulator.service.AccountService;
 import com.bank.BankSimulator.service.AlertService;
+import com.bank.BankSimulator.service.AuthService;
 import com.bank.BankSimulator.service.TransactionService;
 import com.google.gson.Gson;
-
-import spark.Route;
 
 public class ApiServer {
 	
@@ -22,6 +22,8 @@ public class ApiServer {
 		enableCORS();
 		
 		Gson gson = new Gson();
+		
+		AuthService authService = new AuthService();
 		
 		AccountRepository accRepo = new AccountRepository();
 		
@@ -70,22 +72,7 @@ public class ApiServer {
 			
 		});
 		
-		
-		get("/accounts/:accNo",(req,res) ->{
-			System.out.println("/accounts/acc api is called");
-			res.type("application/json");
-			String accNo = req.params("accNo");
-			try {
-				Account acc = accountService.getAccount(accNo);
-				return gson.toJson(acc);
-				
-			}
-			catch(Exception e) {
-				res.status(404);
-				return gson.toJson("Account not found");
-			}
-		});
-		
+	
 		get("/accounts/all",(req,res) -> {
 			System.out.println("/accounts/all api is called");
 			res.type("application/json");
@@ -93,8 +80,33 @@ public class ApiServer {
 			
 		});
 		
+		get("/accounts/:accNo",(req,res) ->{
+			System.out.println("/accounts/acc api is called");
+			res.type("application/json");
+			String accNo = req.params("accNo");
+			try {
+				Account acc = accountService.getAccount(accNo);
+				return gson.toJson(acc);	
+			}
+			catch(Exception e) {
+				res.status(404);
+				return gson.toJson("Account not found");
+			}
+		});
 		
+		 
+		post("/auth/register",(req,res)->{
+		    User user = gson.fromJson(req.body(), User.class);
+		    authService.register(user);
+		    return "Registered successfully";
+		});
 		
+		 
+		post("/auth/login",(req,res)->{
+		    LoginRequest data = gson.fromJson(req.body(), LoginRequest.class);
+		    User user = authService.login(data.email, data.password);
+		    return gson.toJson(user);
+		});
 		
 	}
 	
@@ -115,13 +127,8 @@ public class ApiServer {
 			
 		});
 		
-		 
-		
 	}
-	
-	
- 
-	
+
 	static class AccountRequest{
 			String name;
 			String email;
@@ -138,7 +145,13 @@ public class ApiServer {
 		String toAcc;
 		BigDecimal amount;
 	}
+	
+	static class LoginRequest{
+	    String email;
+	    String password;
+	}
 
+	
 	
 	
 	
