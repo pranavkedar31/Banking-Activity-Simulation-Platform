@@ -2,13 +2,35 @@ const BASE_URL = "http://localhost:8080";
 let isLoggedIn = false;
 
 /* ---------------- AUTH UI CONTROL ---------------- */
-function showAuth(id) {
+function showAuth(id, btn) {
+
+    // Hide forms
     document.getElementById("loginForm").style.display = "none";
     document.getElementById("registerForm").style.display = "none";
+
+    // Show selected form
     document.getElementById(id).style.display = "block";
+
+    // Remove active class from buttons
+    document.querySelectorAll(".auth-btn").forEach(b=>{
+        b.classList.remove("active");
+    });
+
+    // Add active to clicked button
+    if(btn){
+        btn.classList.add("active");
+    }
+
+    // Move sliding indicator
+    const indicator = document.querySelector(".switch-indicator");
+    if(indicator){
+        indicator.style.left = (id === "registerForm") ? "50%" : "0%";
+    }
 }
 
+
 function login() {
+
     const data = {
         email: document.getElementById("l-email").value,
         password: document.getElementById("l-pass").value
@@ -19,26 +41,44 @@ function login() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data)
     })
-        .then(res => res.json())
-        .then(user => {
-            const msgEl = document.getElementById("login-result");
+    .then(res => res.json())
+    .then(user => {
 
-            if (user != null) {
-                isLoggedIn = true;
-                document.getElementById("authButtons").style.display = "none";
-                document.getElementById("logoutBox").style.display = "block";
-                document.getElementById("loginForm").style.display = "none";
-                document.getElementById("registerForm").style.display = "none";
-                document.getElementById("bankActions").style.display = "block";
-                msgEl.className = "success";
-                msgEl.innerText = "Login successful!";
-                clearInputs(["l-email", "l-pass"]);
-            } else {
-                msgEl.className = "error";
-                msgEl.innerText = "Invalid credentials";
-            }
-        });
+        const msgEl = document.getElementById("login-result");
+
+        if (user != null) {
+
+            isLoggedIn = true;
+
+            document.getElementById("authButtons").style.display = "none";
+            document.getElementById("logoutBox").style.display = "block";
+            document.getElementById("bankActions").style.display = "flex";
+            listAccount();   // 🔥 This loads accounts + updates dashboard
+
+
+            // SAFE HIDE (only if exists)
+            const hero = document.getElementById("heroSection");
+            if(hero) hero.style.display = "none";
+
+            const authContainer = document.querySelector(".auth-container");
+            if(authContainer) authContainer.style.display = "none";
+
+            msgEl.className = "success";
+            msgEl.innerText = "Login successful!";
+            clearInputs(["l-email", "l-pass"]);
+
+        } else {
+            msgEl.className = "error";
+            msgEl.innerText = "Invalid credentials";
+        }
+
+    })
+    .catch(err => {
+        console.error(err);
+    });
 }
+
+
 
 function register() {
     const data = {
@@ -69,10 +109,25 @@ function logout() {
 }
 
 /* ---------------- SECTION CONTROL ---------------- */
+// function showSection(id) {
+//     document.querySelectorAll(".section").forEach(sec => sec.style.display = 'none');
+//     document.getElementById(id).style.display = 'block';
+// }
 function showSection(id) {
-    document.querySelectorAll(".section").forEach(sec => sec.style.display = 'none');
-    document.getElementById(id).style.display = 'block';
+
+    document.querySelectorAll(".section").forEach(sec => {
+        sec.style.display = "none";
+    });
+
+    document.getElementById(id).style.display = "block";
+
+    document.querySelectorAll(".sidebar button").forEach(btn => {
+        btn.classList.remove("active");
+    });
+
+    event.target.classList.add("active");
 }
+
 
 /* ---------------- BANKING FEATURES ---------------- */
 
@@ -198,9 +253,12 @@ function viewAccount() {
 }
 
 function listAccount(){
-    fetch(BASE_URL+"/accounts/all")
+    fetch(BASE_URL + "/accounts/all")
     .then(res => res.json())
     .then(data => {
+
+        let totalBalance = 0;
+        let totalTransactions = 0;
 
         let output = `
             <table class="accounts-table">
@@ -213,6 +271,8 @@ function listAccount(){
         `;
 
         data.forEach(acc => {
+            totalBalance += parseFloat(acc.balance);
+
             output += `
                 <tr>
                     <td>${acc.accountNumber}</td>
@@ -226,11 +286,108 @@ function listAccount(){
         output += `</table>`;
 
         document.getElementById("list-result").innerHTML = output;
+
+        // 🔥 UPDATE DASHBOARD HERE
+        updateDashboard(
+            totalBalance,
+            data.length,
+            data.length * 3   // example transaction count
+        );
     });
 }
+
  
 function clearInputs(ids) {
     ids.forEach(id => {
         document.getElementById(id).value = "";
     });
 }
+
+window.onload = function(){
+    const firstBtn = document.querySelector(".auth-btn");
+    showAuth("loginForm", firstBtn);
+};
+
+/* ===== DASHBOARD DATA ===== */
+
+let totalBalance = 0;
+let totalAccounts = 0;
+let totalTransactions = 0;
+
+/* Animate Counter */
+function animateValue(id, start, end, duration) {
+
+    const obj = document.getElementById(id);
+    if(!obj) return;   // safety check
+
+    if(end === 0){
+        obj.innerText = id === "totalBalance" ? "₹0" : "0";
+        return;
+    }
+
+    let range = end - start;
+    let increment = Math.ceil(range / 50); // 🔥 dynamic step (faster)
+    let current = start;
+
+    let timer = setInterval(() => {
+        current += increment;
+
+        if(current >= end){
+            current = end;
+            clearInterval(timer);
+        }
+
+        obj.innerText = id === "totalBalance"
+            ? "₹" + current.toLocaleString()
+            : current;
+
+    }, duration / 50);
+}
+
+
+
+/* Update Dashboard */
+function updateDashboard(balance, accounts, transactions) {
+    totalBalance = balance;
+    totalAccounts = accounts;
+    totalTransactions = transactions;
+
+    animateValue("totalBalance", 0, balance, 800);
+    animateValue("totalAccounts", 0, accounts, 800);
+    animateValue("totalTransactions", 0, transactions, 800);
+}
+
+/* Chart */
+const ctx = document.getElementById("balanceChart").getContext("2d");
+
+new Chart(ctx, {
+    type: "doughnut",
+    data: {
+        labels: ["Savings", "Current", "Fixed"],
+        datasets: [{
+            data: [40, 30, 30],
+            backgroundColor: ["#00c6ff", "#0072ff", "#ff416c"],
+            borderWidth: 2
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: "70%",   // makes center hole bigger (premium look)
+        plugins: {
+            legend: {
+                position: "bottom",
+                labels: {
+                    color: "white"
+                }
+            }
+        }
+    }
+});
+
+
+/* Dark Mode Toggle */
+function toggleTheme(){
+    document.body.classList.toggle("light-mode");
+}
+
