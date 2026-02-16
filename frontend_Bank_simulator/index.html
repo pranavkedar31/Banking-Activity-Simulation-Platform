@@ -1,148 +1,179 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Banking Simulator</title>
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Banking Simulator</title>
+<link rel="stylesheet" href="style.css">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 </head>
 
 <body>
 
-    <!-- HEADER -->
-    <header class="top-header">
-        <div class="logo">
-            <img src="bank-vector-icon.jpg" alt="Bank Logo">
-            <span>BankingSimulator</span>
-        </div>
+<header class="premium-header">
 
-        <div class="nav-buttons" id="authButtons">
-            <button onclick="showAuth('loginForm')">Login</button>
-            <button onclick="showAuth('registerForm')">Register</button>
-        </div>
-
-        <div class="nav-buttons" id="logoutBox" style="display:none;">
-            <button onclick="logout()" class="logout-btn">Logout</button>
-        </div>
-    </header>
-
-    <div class="hero">
-        <h1 class="hero-title">Welcome to <span>Banking Simulator</span></h1>
-        <p>
-            Manage your bank accounts easily.
-            Create new accounts, deposit and withdraw money,
-            transfer funds, and view account details — all in one place.
-        </p>
-
-        <div class="hero-features">
-            <div>✔ Create Account</div>
-            <div>✔ Deposit & Withdraw</div>
-            <div>✔ Transfer Money</div>
-            <div>✔ View Accounts</div>
-        </div>
+    <div class="logo">
+        🏦 <span>Banking Simulator</span>
     </div>
 
-    <!-- MAIN CONTAINER -->
-    <main class="container">
+    <div class="header-right">
 
+        <div class="theme-toggle" onclick="toggleTheme()">🌙</div>
 
-        <!-- AUTH BUTTONS 
-        <div id="authButtons">
-            <button onclick="showAuth('loginForm')">Login</button>
-            <button onclick="showAuth('registerForm')">Register</button>
-        </div> -->
-
-        <!-- LOGIN FORM -->
-        <div id="loginForm" class="section">
-            <h2>Login</h2>
-            <input id="l-email" placeholder="Enter Email"><br><br>
-            <input id="l-pass" type="password" placeholder="Enter Password"><br><br>
-            <button onclick="login()">Login</button>
-            <p id="login-result"></p>
+        <div id="authButtons" class="auth-switch">
+            <button class="auth-btn active" onclick="showAuth('loginForm', this)">Login</button>
+            <button class="auth-btn" onclick="showAuth('registerForm', this)">Register</button>
+            <div class="switch-indicator"></div>
         </div>
 
-        <!-- REGISTER FORM -->
-        <div id="registerForm" class="section">
-            <h2>Register</h2>
-            <input id="r-name" placeholder="Enter Name"><br><br>
-            <input id="r-email" placeholder="Enter Email"><br><br>
-            <input id="r-pass" type="password" placeholder="Enter Password"><br><br>
-            <button onclick="register()">Register</button>
-            <p id="register-result"></p>
+        <div id="logoutBox" style="display:none;">
+            <button class="logout-btn" onclick="logout()">Logout</button>
         </div>
 
-        <!-- BANKING UI -->
-        <div id="bankActions" style="display:none;">
+    </div>
 
-            <div class="button-container">
-                <button onclick="showSection('create')">Create Account</button>
-                <button onclick="showSection('deposite')">Deposite</button>
-                <button onclick="showSection('withdraw')">Withdraw</button>
-                <button onclick="showSection('transfer')">Transfer</button>
-                <button onclick="showSection('view')">View Account</button>
-                <button onclick="showSection('list')">View All Account</button>
-            </div>
+</header>
 
 
 
-            <div id="create" class="section">
-                <h2>Create Account</h2>
-                <input id="c-name" placeholder="Enter name"><br><br>
-                <input id="c-email" placeholder="Enter Email"><br><br>
-                <input id="c-balance" placeholder="Enter Openingbalance"><br><br>
-                <button onclick="createAccount()">Submit</button>
-                <p id="create-result"></p>
-            </div>
 
-            <div id="deposite" class="section">
-                <h2>Deposite Money</h2>
-                <input id="d-acc" placeholder="Account Number"><br><br>
-                <input id="d-amount" placeholder="Amount"><br><br>
-                <button onclick="deposite()">Submit</button>
-                <p id="deposite-result"></p>
-            </div>
+<section class="hero" id="heroSection">
+    <h1>Smart Digital Banking</h1>
+    <p>Manage accounts, transfer funds, and monitor balances securely and easily.</p>
+</section>
 
-            <div id="withdraw" class="section">
-                <h2>Withdraw Money</h2>
-                <input id="w-acc" placeholder="Account Number"><br><br>
-                <input id="w-amount" placeholder="Amount"><br><br>
-                <button onclick="withdraw()">Submit</button>
-                <p id="withdraw-result"></p>
-            </div>
+<main class="container">
 
-            <div id="transfer" class="section">
-                <h2>Transfer Money</h2>
-                <input id="t-from" placeholder="Sender Account"><br><br>
-                <input id="t-to" placeholder="Receiver Account"><br><br>
-                <input id="t-amount" placeholder="Amount"><br><br>
-                <button onclick="transfer()">Submit</button>
-                <p id="trasfer-result"></p>
-            </div>
+<!-- AUTH FORMS -->
+<div class="auth-container">
 
-            <div id="view" class="section">
-                <h2>View Account Details</h2>
-                <input id="v-acc" placeholder="Account Number"><br><br>
-                <button onclick="viewAccount()">Submit</button>
-                <pre id="view-result"></pre>
-            </div>
+    <div id="loginForm" class="section">
+        <h2>Login</h2>
+        <input id="l-email" placeholder="Email">
+        <input id="l-pass" type="password" placeholder="Password">
+        <button class="btn-primary" onclick="login()">Login</button>
+        <p id="login-result"></p>
+    </div>
 
-            <div id="list" class="section">
-                <h2>All Accounts</h2>
-                <button onclick="listAccount()">Load Accounts</button>
-                <pre id="list-result"></pre>
-            </div>
+    <div id="registerForm" class="section">
+        <h2>Register</h2>
+        <input id="r-name" placeholder="Name">
+        <input id="r-email" placeholder="Email">
+        <input id="r-pass" type="password" placeholder="Password">
+        <button class="btn-primary" onclick="register()">Register</button>
+        <p id="register-result"></p>
+    </div>
 
+</div>
+
+<!-- DASHBOARD LAYOUT -->
+<div id="bankActions" class="dashboard-layout" style="display:none;">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <h2>IndianBank 💎</h2>
+
+        <button onclick="showSection('create')">➕ Create</button>
+        <button onclick="showSection('deposite')">💰 Deposit</button>
+        <button onclick="showSection('withdraw')">💸 Withdraw</button>
+        <button onclick="showSection('transfer')">🔄 Transfer</button>
+        <button onclick="showSection('view')">👁 View</button>
+        <button onclick="showSection('list')">📋 Accounts</button>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+
+        <div class="dashboard-home">
+            <h1>Welcome Back 👋</h1>
+            <p>Welcome to our Banking Simulator .</p>
+        </div>
+
+        <div class="summary-grid">
+
+    <div class="summary-card">
+        <h4>Total Balance</h4>
+        <h2 id="totalBalance">₹0</h2>
+    </div>
+
+    <div class="summary-card">
+        <h4>Total Accounts</h4>
+        <h2 id="totalAccounts">0</h2>
+    </div>
+
+    <div class="summary-card">
+        <h4>Total Transactions</h4>
+        <h2 id="totalTransactions">0</h2>
+    </div>
+
+</div>
+
+<div class="chart-wrapper">
+    <canvas id="balanceChart"></canvas>
+</div>
+
+
+
+        <!-- ALL YOUR EXISTING SECTIONS BELOW -->
+
+        <div id="create" class="section">
+            <h2>Create Account</h2>
+            <input id="c-name" placeholder="Name">
+            <input id="c-email" placeholder="Email">
+            <input id="c-balance" placeholder="Opening Balance">
+            <button onclick="createAccount()">Submit</button>
+            <p id="create-result"></p>
+        </div>
+
+        <div id="deposite" class="section">
+            <h2>Deposit</h2>
+            <input id="d-acc" placeholder="Account Number">
+            <input id="d-amount" placeholder="Amount">
+            <button onclick="deposite()">Submit</button>
+            <p id="deposite-result"></p>
+        </div>
+
+        <div id="withdraw" class="section">
+            <h2>Withdraw</h2>
+            <input id="w-acc" placeholder="Account Number">
+            <input id="w-amount" placeholder="Amount">
+            <button onclick="withdraw()">Submit</button>
+            <p id="withdraw-result"></p>
+        </div>
+
+        <div id="transfer" class="section">
+            <h2>Transfer</h2>
+            <input id="t-from" placeholder="Sender Account">
+            <input id="t-to" placeholder="Receiver Account">
+            <input id="t-amount" placeholder="Amount">
+            <button onclick="transfer()">Submit</button>
+            <p id="trasfer-result"></p>
+        </div>
+
+        <div id="view" class="section">
+            <h2>Account Details</h2>
+            <input id="v-acc" placeholder="Account Number">
+            <button onclick="viewAccount()">Submit</button>
+            <div id="view-result"></div>
+        </div>
+
+        <div id="list" class="section">
+            <h2>All Accounts</h2>
+            <button onclick="listAccount()">Load</button>
+            <div id="list-result"></div>
         </div>
 
     </main>
 
-    <!-- FOOTER -->
-    <footer>
-        © 2026 Banking Simulator | All rights reserved
-    </footer>
+</div>
+</main>
 
-    <script src="script.js"></script>
+<footer>
+    © 2026 Banking Simulator | Designed with ❤️
+</footer>
+
+<script src="script.js"></script>
 </body>
-
 </html>
